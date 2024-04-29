@@ -100,7 +100,7 @@ class SeismicDataModule(L.LightningDataModule):
         # check if root dir exists
         if not os.path.exists(self.root_dir):
             print(f"Creating the root directory: [{self.root_dir}]")
-            os.mkdir(self.root_dir)
+            os.makedirs(self.root_dir)
 
         if not os.path.exists(self.zip_file):
             print(f"Could not find the zip file [{self.zip_file}]")

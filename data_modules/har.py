@@ -256,7 +256,7 @@ class HarDataModule(L.LightningDataModule):
 
         if not os.path.exists(self.root_data_dir):
             print(f"Creating the root data directory: [{self.root_data_dir}]")
-            os.mkdir(self.root_data_dir)
+            os.makedirs(self.root_data_dir)
 
         if not os.path.exists(self.zip_file):
             print(f"Could not find the zip file [{self.zip_file}]")
