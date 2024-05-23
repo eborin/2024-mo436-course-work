@@ -3,3 +3,4 @@ lightning
 pandas
 tifffile
 torchmetrics
+torchsummary
