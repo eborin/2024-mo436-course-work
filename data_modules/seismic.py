@@ -164,7 +164,7 @@ class F3SeismicDataModule(L.LightningDataModule):
         self.zip_file = root_dir + "f3.zip"
         self.setup()
 
-    def setup(self):
+    def setup(self, stage:str = None):
         # Check if root dir exists
         if not os.path.exists(self.root_dir):
             print(f"Creating the root directory: [{self.root_dir}]")

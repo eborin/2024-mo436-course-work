@@ -4,7 +4,7 @@ from torch import Tensor
 import torch.nn.functional as F
 import torch
 import torch.distributed as dist
-import pytorch_lightning as pl
+import lightning as L
 
 class BT_ProjectionHead(nn.Module):
     def __init__(
@@ -36,12 +36,24 @@ class BT_ProjectionHead(nn.Module):
         projection: Tensor = self.layers(x)
         return projection
     
-class BarlowTwins(pl.LightningModule):
-    def __init__(self, backbone, projection_head):
+class BarlowTwins(L.LightningModule):
+    def __init__(self, 
+                 backbone, 
+                 projection_head,
+                 loss_fn = None,
+                 learning_rate = 0.06):
         super().__init__()
         self.backbone = backbone
         self.projection_head = projection_head
-        self.criterion = BarlowTwinsLoss()
+        if loss_fn:
+            self.loss_fn = loss_fn
+        else:
+            self.loss_fn = BarlowTwinsLoss()
+        if learning_rate:
+            self.learning_rate = learning_rate
+        else:
+            self.learning_rate = 0.06
+
 
     def forward(self, x):
         x = self.backbone(x)
@@ -52,16 +64,18 @@ class BarlowTwins(pl.LightningModule):
         (x, x0, x1) = batch[0]
         z0 = self.forward(x0)
         z1 = self.forward(x1)
-        loss = self.criterion(z0, z1)
+        loss = self.loss_fn(z0, z1)
         self.log("train_loss", loss)
         return loss
 
     def configure_optimizers(self):
-        optim = torch.optim.SGD(self.parameters(), lr=0.06)
+        optim = torch.optim.SGD(self.parameters(), lr=self.learning_rate)
         return optim
 
 class BarlowTwinsLoss(nn.Module):
-    def __init__(self, lambda_param: float = 5e-3, gather_distributed: bool = False):
+    def __init__(self, 
+                 lambda_param: float = 5e-3, 
+                 gather_distributed: bool = False):
         super(BarlowTwinsLoss, self).__init__()
         self.lambda_param = lambda_param
         self.gather_distributed = gather_distributed

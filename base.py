@@ -8,6 +8,7 @@ from data_modules.har import HarDataModule
 from abc import ABC, abstractmethod
 from lightning.pytorch.loggers import CSVLogger
 from lightning.pytorch.callbacks import ModelCheckpoint
+
 import argparse
 from pathlib import Path
 
@@ -103,7 +104,7 @@ class Configuration(ABC):
             save_dir=save_dir,
             name=name,
             version=version,
-            flush_logs_every_n_steps=10,
+            flush_logs_every_n_steps=1,
         )
 
         model_checkpoint = ModelCheckpoint(
@@ -154,9 +155,7 @@ def train_model(
 
     """
     if backbone_ckpt_path is not None:
-        model = config.model(
-            backbone_ckpt_path=backbone_ckpt_path, **model_kwargs
-        )
+        model = config.model(backbone_ckpt_path=backbone_ckpt_path, **model_kwargs)
     else:
         model = config.model(**model_kwargs)
 

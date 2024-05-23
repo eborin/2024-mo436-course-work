@@ -245,7 +245,7 @@ class HarDataModule(L.LightningDataModule):
         }
         self.setup()
 
-    def setup(self) -> None:
+    def setup(self, stage:str = None) -> None:
         # Verify that the data is available. If not, fectch and unzip dataset
         for k, v in self.csv_files.items():
             if not os.path.exists(v):
