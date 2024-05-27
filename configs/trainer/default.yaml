@@ -1,9 +1,0 @@
-# Description: Default configuration for the trainer
-# Check Lightning Trainer documentation for more details: https://lightning.ai/docs/pytorch/stable/common/trainer.html#trainer
-max_epochs: 10
-accelerator: cpu
-# devices: 1
-logger: 
-  class_path: lightning.pytorch.loggers.CSVLogger
-  init_args:
-    save_dir: "logs"

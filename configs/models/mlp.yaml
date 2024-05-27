@@ -1,8 +1,0 @@
-# Description: Configuration for the MultiLayerPerceptron model
-# class_path: The path to the model class
-# init_args: The arguments to pass to the model class
-class_path: models.mlp.MultiLayerPerceptron
-init_args:
-  input_features: 360
-  hidden_size: 64
-  num_classes: 6
