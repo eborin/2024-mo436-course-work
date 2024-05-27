@@ -4,39 +4,18 @@ This repository contains code and instructions to support the MO346/MC934 course
 
 This project has the following structure:
 
-- `configs/`: contains the configuration files to instantiate models, data modules, and trainers. It is used by `LightningCLI` to instantiate experiments. The configuration files are written in YAML format and contain the class path (package and class name) and parameters to instantiate the objects.
-- `data/`: contains the data used in the project. Your data should be stored here. This directory is not tracked by git.
+- `data/`: contains the data used in the project. Your data should be stored here. This directory may contain large datasets and must not be added to the Git repository.
 - `data_modules/`: contains implementations of `LightningDataModule` classes. These classes are responsible for loading and preprocessing data, and also for splitting the data into training, validation, and test sets.
 - `models/`: contains implementations of `LightningModule` classes. These classes are responsible for defining the model architecture and implementing the `forward`, `training_step`, and `configure_optimizers`  methods.
 - `transforms/`: contains implementations of Numpy/PyTorch transforms. These transforms are used to preprocess data before feeding it to the model.
-
-The `main.py` file is the entry point of the project. 
-It is a CLI that is responsible for instantiating the trainer, model, and data module, and also performing the training and testing of the model.
-Configuration files are used to instantiate each of these objects. 
-The configuration files are stored in the `configs/` directory.
-
-For instance, to train and test the model, you can run the following command:
-
-```bash
-python main.py --trainer configs/trainer/default.yaml --model configs/models/mlp.yaml --data configs/data_modules/har.yaml
-```
-
-The `--trainer` contains the class and parameters for instantiating a `Lightning.Trainer` object.
-The `--model` contains the name of the class and parameters for instantiating a `LightningModule` object.
-The `--data` contains the name of the class and parameters for instantiating a `LightningDataModule` object.
-Output files are stored in the `logs/` directory. This directory is not tracked by git.
-
-The trainer will use standard `fit` and `test` methods from the `LightningModule` class to train and test the model. 
-The `fit` method is used to train the model, and the `test` method is used to test the model.
+- `best_results/`: contains the scripts to pretrain the backbone, train the downstream model, and evaluate the downstream model with the best hyperparameters (e.g., learning rate) for each technique. The scripts in this directory must follow the API defined by the professor.
+- `report_results/`: contains the scripts to generate the results presented at the technical report. 
 
 ## Tutorial notebooks
 
-The `1-HAR-dataloader-exploration.ipynb` and `2-HAR-MLP-training.ipynb` notebooks contains instructions on how to read the HAR dataset and train an MLP model to solve the HAR task.
-The `3-Seismic-dataloader-exploration.ipynb` and `4-Seismic-Deeplab-training.ipynb` notebooks contains instructions on how to read the Seismic dataset and train an Deeplab v3 model to solve the Seismic task.
-
+The `ipynb` files at the root directory (e.g., `1-HAR-dataloader-exploration.ipynb`, `2-HAR-MLP-training.ipynb`, etc.) are tutorial notebooks with instructions on how to read the HAR/seismic dataset and train ML models to solve the HAR/seismic tasks.
 
 ## Installation
-
 
 We use VSCode Containers to run the project. To run the project, you need to have Docker and VSCode installed on your machine.
 If you don't know how to use Containers in VSCode, you can follow the instructions in the [following link](https://github.com/otavioon/container-workspace).
@@ -47,19 +26,15 @@ Once inside the container, you can install the dependencies, running the followi
 pip install -r requirements.txt
 ```
 
-## Running the tests
+## Running the example code
 
-To run the tests, you can run the following command:
+To run the example code, you must change into the `best_results/seismic/` directory and run the following commands:
 
 ```bash
-run.sh
+python BT_pretrain.py  
+python BT_train.py
+python BT_evaluate.py
 ```
-
-## Adding new features
-
-To add new features to the project, you can create new files in the `data_modules/`, `models/`, and `transforms/` directories.
-Once you have created the new files, you can create new configuration files in the `configs/` directory.
-
 ## Authors
 
 - [Otávio Napoli](https://github.com/otavioon)
