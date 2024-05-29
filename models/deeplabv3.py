@@ -45,7 +45,7 @@ class DeepLabV3Model(L.LightningModule):
     
 class DeepLabV3Backbone(nn.Module):
     def __init__(self, num_classes=6):
-        super().__init__(self)
+        super().__init__()
         self.RN50model = resnet50(replace_stride_with_dilation=[False, True, True])
     
     def freeze_weights(self):
