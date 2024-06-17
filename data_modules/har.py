@@ -23,6 +23,8 @@ class HarDataset(Dataset):
         ),
         target_column: str = "standard activity code",
         flatten: bool = False,
+        transform = None,
+        target_transform = None,
     ):
         """Define the dataloaders for train, validation and test splits for
         HAR datasets. This datasets assumes that data is stored as a single CSV
@@ -67,6 +69,12 @@ class HarDataset(Dataset):
         flatten : bool, optional
             If False, the data will be returned as a vector of shape (C, T),
             else the data will be returned as a vector of shape  T*C.
+        transform: callable, optional
+            A function/transform that takes in a np.array representing the sample feattures and returns a transformed version of this sample
+            Default is None.
+        target_transform: callable, optional
+            A function/transform that takes in a np.array representing the sample label and returns a transformed version of this label
+            Default is None.
             
         Examples
         --------
@@ -111,6 +119,8 @@ class HarDataset(Dataset):
         self.feature_column_prefixes = feature_column_prefixes
         self.target_column = target_column
         self.flatten = flatten
+        self.transform = transform
+        self.target_transform = target_transform
 
         # Read data
         self.data = pd.read_csv(self.csv_file_path)
@@ -154,8 +164,13 @@ class HarDataset(Dataset):
             data = data.flatten()
         
         target = self.data.iloc[idx][self.target_column]
-        return data, target
 
+        if self.transform:
+            data = self.transform(data)
+        if self.target_transform:
+            target = self.target_transform(target)
+
+        return data, target
 
 class HarDataModule(L.LightningDataModule):
     def __init__(
@@ -175,6 +190,8 @@ class HarDataModule(L.LightningDataModule):
         flatten: bool = False,
         # DataLoader parameters
         batch_size: int = 32,
+        transform=None, 
+        target_transform=None
     ):
         """Encapsulates the data loading and processing for the HAR dataset.
         This class is a subclass of `LightningDataModule` and implements the
@@ -229,11 +246,21 @@ class HarDataModule(L.LightningDataModule):
         batch_size : int, optional
             Number of samples per batch. This parameter is used for 
             instantiating the DataLoader objects.
+        transform: callable, optional
+            A function/transform that takes in a np.array representing the sample feattures and returns a transformed version of this sample.
+            This function will be employed on the train, validation and test datasets.
+            Default is None.
+        target_transform: callable, optional
+            A function/transform that takes in a np.array representing the sample label and returns a transformed version of this label
+            This function will be employed on the train, validation and test datasets.
+            Default is None.
         """
         super().__init__()
         self.root_data_dir = Path(root_data_dir)
         self.feature_column_prefixes = feature_column_prefixes
         self.target_column = target_column
+        self.transform = transform
+        self.target_transform = target_transform
         self.flatten = flatten
         self.batch_size = batch_size
         self.zip_file = os.path.join(self.root_data_dir, "har.zip")
@@ -290,6 +317,8 @@ class HarDataModule(L.LightningDataModule):
             feature_column_prefixes=self.feature_column_prefixes,
             target_column=self.target_column,
             flatten=self.flatten,
+            transform=self.transform, 
+            target_transform=self.target_transform
         )
         dataloader = DataLoader(
             dataset,
