@@ -133,6 +133,8 @@ class F3SeismicDataModule(L.LightningDataModule):
     ----------
         root_dir: str
             The root directory path where the data files are located.
+        dataset_version: str
+            f3 or f3-ilan
         batch_size: int
             The batch size for the DataLoaders.
         shuffle_dataset_indices: bool
@@ -149,6 +151,7 @@ class F3SeismicDataModule(L.LightningDataModule):
     """    
     def __init__(self, 
                  root_dir, 
+                 dataset_version="f3",
                  batch_size=32, 
                  num_workers=8, 
                  shuffle_dataset_indices = True,
@@ -161,7 +164,8 @@ class F3SeismicDataModule(L.LightningDataModule):
         self.shuffle_dataset_indices = shuffle_dataset_indices
         self.transform = transform
         self.target_transform = target_transform
-        self.zip_file = root_dir + "f3.zip"
+        self.dataset_version = dataset_version
+        self.zip_file = root_dir + f"{self.dataset_version}.zip"
         self.setup()
 
     def setup(self, stage:str = None):
@@ -174,17 +178,17 @@ class F3SeismicDataModule(L.LightningDataModule):
         if not os.path.exists(self.zip_file):
             print(f"Could not find the zip file [{self.zip_file}]")
             print(f"Trying to download it.")
-            url = "https://www.ic.unicamp.br/~edson/disciplinas/mo436/2024-1s/data/f3.zip"
+            url = f"https://www.ic.unicamp.br/~edson/disciplinas/mo436/2024-1s/data/{self.dataset_version}.zip"
             urllib.request.urlretrieve(url, self.zip_file)
 
         # Check if f3/ folder exists. If not, unzip the f3.zip file
-        if not os.path.exists(self.root_dir + "/f3"):
+        if not os.path.exists(self.root_dir + f"/{self.dataset_version}"):
             with zipfile.ZipFile(self.zip_file, "r") as zip_ref:
                 zip_ref.extractall(self.root_dir)
-            print("F3 Dataset extracted from {self.zip_file}")
+            print(f"F3 Dataset extracted from {self.zip_file}")
 
-        self.data_dir   = os.path.join(self.root_dir, "f3", "images")
-        self.labels_dir = os.path.join(self.root_dir, "f3", "annotations")
+        self.data_dir   = os.path.join(self.root_dir, self.dataset_version, "images")
+        self.labels_dir = os.path.join(self.root_dir, self.dataset_version, "annotations")
 
         self.train_dataset = F3SeismicDataset(
             self.data_dir + "/train", self.labels_dir + "/train", 
