@@ -1,28 +1,16 @@
 import torch
 from torch import nn
 from torch.nn import functional as F
-from typing import Any, Optional, Sequence
-
+from typing import Sequence
 from torchvision.models.resnet import resnet50
-from torchvision.models._utils import IntermediateLayerGetter
-import types
-
 import lightning as L
 
-from torchvision.models.segmentation import DeepLabV3
 
 class DeepLabV3Model(L.LightningModule):
     def __init__(self, backbone=None, pred_head=None, num_classes=6):
         super().__init__()
-        if backbone:
-            self.backbone = backbone
-        else:
-            self.backbone = DeepLabV3Backbone()
-        if pred_head:
-            self.pred_head = pred_head
-        else:
-            self.pred_head = DeepLabV3PredictionHead(num_classes=num_classes)
-
+        self.backbone = backbone if backbone else DeepLabV3Backbone()
+        self.pred_head = pred_head if pred_head else DeepLabV3PredictionHead(num_classes=num_classes)
         self.loss_fn = torch.nn.CrossEntropyLoss()
 
     def forward(self, x):
@@ -34,9 +22,9 @@ class DeepLabV3Model(L.LightningModule):
 
     def training_step(self, batch, batch_idx):
         X, y = batch
-        y_hat = self.forward(X.float())
+        y_hat = self.forward(X)
         # Compute the loss
-        loss = self.loss_fn(y_hat, y.squeeze(1).long())
+        loss = self.loss_fn(y_hat, y)
         # Logging to TensorBoard (if installed) by default
         self.log("train_loss", loss)
         return loss
@@ -44,9 +32,9 @@ class DeepLabV3Model(L.LightningModule):
     def validation_step(self, batch, batch_idx):
         # this is the validation loop
         X, y = batch
-        y_hat = self.forward(X.float())
+        y_hat = self.forward(X)
         # Compute the loss
-        val_loss = self.loss_fn(y_hat, y.squeeze(1).long())
+        val_loss = self.loss_fn(y_hat, y)
         # Logging to TensorBoard (if installed) by default
         self.log("val_loss", val_loss)
         return val_loss
@@ -58,15 +46,14 @@ class DeepLabV3Model(L.LightningModule):
 class DeepLabV3Backbone(nn.Module):
     def __init__(self, num_classes=6):
         super().__init__()
-        RN50model = resnet50(replace_stride_with_dilation=[False, True, True])
-        self.RN50model = RN50model
+        self.RN50model = resnet50(replace_stride_with_dilation=[False, True, True])
     
-    def freeze_weights():
-        for param in RN50model.parameters():
+    def freeze_weights(self):
+        for param in self.RN50model.parameters():
             param.requires_grad = False
 
-    def unfreeze_weights():
-        for param in RN50model.parameters():
+    def unfreeze_weights(self):
+        for param in self.RN50model.parameters():
             param.requires_grad = True
 
     def forward(self, x):
